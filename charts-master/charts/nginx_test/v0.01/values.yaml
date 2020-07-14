@@ -1,0 +1,99 @@
+## nginx_test image version
+## ref: https://hub.docker.com/r/library/nginx_test/tags/
+##
+replicaCount: 1
+image: 
+  repository: 
+  tag: latest
+  pullPolicy: IfNotPresent
+service:
+  name: nginx_test
+  externalPort: 3000
+  internalPort: 3000
+  type: ClusterIP
+  port: 8006
+ingress:
+  enabled: false
+  hosts:
+    - xip.ip
+  annotations:
+
+## Specify password for root user
+##
+## Default: random 10 character string
+# nginx_testRootPassword: testing
+
+## Create a database user
+##
+# nginx_testUser:
+# nginx_testPassword:
+
+## Allow unauthenticated access, uncomment to enable
+##
+# nginx_testAllowEmptyPassword: true
+
+## Create a database
+##
+# nginx_testDatabase:
+
+## Specify an imagePullPolicy (Required)
+## It's recommended to change this to 'Always' if the image tag is 'latest'
+## ref: http://kubernetes.io/docs/user-guide/images/#updating-images
+##
+imagePullPolicy: IfNotPresent
+
+## Node selector
+## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector
+nodeSelector: {}
+
+livenessProbe:
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  successThreshold: 1
+  failureThreshold: 3
+
+readinessProbe:
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 1
+  successThreshold: 1
+  failureThreshold: 3
+
+## Persist data to a persistent volume
+persistence:
+  enabled: true
+  ## database data Persistent Volume Storage Class
+  ## If defined, storageClassName: <storageClass>
+  ## If set to "-", storageClassName: "", which disables dynamic provisioning
+  ## If undefined (the default) or set to null, no storageClassName spec is
+  ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+  ##   GKE, AWS & OpenStack)
+  ##
+  # storageClass: "-"
+  accessMode: ReadWriteOnce
+  size: 8Gi
+
+## Configure resource requests and limits
+## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+##
+resources:
+  requests:
+    memory: 256Mi
+    cpu: 100m
+
+# Custom nginx_test configuration files used to override default nginx_test settings
+configurationFiles:
+#  nginx_test.cnf: |-
+#    [nginx_testd]
+#    skip-name-resolve
+
+
+## Configure the service
+## ref: http://kubernetes.io/docs/user-guide/services/
+#service:
+  ## Specify a service type
+  ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services---service-types
+ # type: ClusterIP
+  #port: 8006
+  # nodePort: 32000

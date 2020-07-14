@@ -1,0 +1,194 @@
+{{- if .Values.nginx_test.enabled -}}
+{{- $serviceName := include "artifactory.fullname" . -}}
+{{- $servicePort := .Values.artifactory.externalPort -}}
+apiVersion: apps/v1
+kind: {{ .Values.nginx_test.kind }}
+metadata:
+  name: {{ template "artifactory.nginx_test.fullname" . }}
+  labels:
+    app: {{ template "artifactory.name" . }}
+    chart: {{ template "artifactory.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+    component: {{ .Values.nginx_test.name }}
+{{- if .Values.nginx_test.labels }}
+{{ toYaml .Values.nginx_test.labels | indent 4 }}
+{{- end }}
+spec:
+{{- if eq .Values.nginx_test.kind "StatefulSet" }}
+  serviceName: {{ template "artifactory.nginx_test.fullname" . }}
+{{- end }}
+{{- if ne .Values.nginx_test.kind "DaemonSet" }}
+  replicas: {{ .Values.nginx_test.replicaCount }}
+{{- end }}
+  selector:
+    matchLabels:
+      app: {{ template "artifactory.name" . }}
+      release: {{ .Release.Name }}
+      component: {{ .Values.nginx_test.name }}
+  template:
+    metadata:
+      annotations:
+        checksum/nginx_test-conf: {{ include (print $.Template.BasePath "/nginx_test-conf.yaml") . | sha256sum }}
+        checksum/nginx_test-artifactory-conf: {{ include (print $.Template.BasePath "/nginx_test-artifactory-conf.yaml") . | sha256sum }}
+      labels:
+        app: {{ template "artifactory.name" . }}
+        chart: {{ template "artifactory.chart" . }}
+        component: {{ .Values.nginx_test.name }}
+        heritage: {{ .Release.Service }}
+        release: {{ .Release.Name }}
+    spec:
+      serviceAccountName: {{ template "artifactory.serviceAccountName" . }}
+    {{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+      - name: {{ .Values.imagePullSecrets }}
+    {{- end }}
+      initContainers:
+      - name: "setup"
+        image: "{{ .Values.initContainerImage }}"
+        imagePullPolicy: {{ .Values.nginx_test.image.pullPolicy }}
+        command:
+        - '/bin/sh'
+        - '-c'
+        - >
+          rm -rfv {{ .Values.nginx_test.persistence.mountPath }}/lost+found;
+          mkdir -p {{ .Values.nginx_test.persistence.mountPath }}/logs;
+        volumeMounts:
+        - mountPath: {{ .Values.nginx_test.persistence.mountPath | quote }}
+          name: nginx_test-volume
+      securityContext:
+        runAsUser: {{ .Values.nginx_test.uid }}
+        fsGroup: {{ .Values.nginx_test.gid }}
+      containers:
+      - name: {{ .Values.nginx_test.name }}
+        image:  ##'{{ .Values.nginx_test.image.repository }}:{{ default .Chart.AppVersion .Values.nginx_test.image.version }}'
+        imagePullPolicy: {{ .Values.nginx_test.image.pullPolicy }}
+        command:
+          - 'nginx_test'
+          - '-g'
+          - 'daemon off;'
+        ports:
+        # DEPRECATION NOTE: The following is to maintain support for values pre 1.3.1 and
+        # will be cleaned up in a later version
+        {{- if .Values.nginx_test.http }}
+        {{- if .Values.nginx_test.http.enabled }}
+        - containerPort: {{ .Values.nginx_test.http.internalPort }}
+        {{- end }}
+        {{- else }} # DEPRECATED
+        - containerPort: {{ .Values.nginx_test.internalPortHttp }}
+        {{- end }}
+        {{- if .Values.nginx_test.https }}
+        {{- if .Values.nginx_test.https.enabled }}
+        - containerPort: {{ .Values.nginx_test.https.internalPort }}
+        {{- end }}
+        {{- else }} # DEPRECATED
+        - containerPort: {{ .Values.nginx_test.internalPortHttps }}
+        {{- end }}
+        {{- if .Values.artifactory.ssh.enabled }}
+        - containerPort: {{ .Values.nginx_test.ssh.internalPort }}
+        {{- end }}
+        volumeMounts:
+        - name: nginx_test-conf
+          mountPath: /etc/nginx_test/nginx_test.conf
+          subPath: nginx_test.conf
+        - name: nginx_test-artifactory-conf
+          mountPath: "{{ .Values.nginx_test.persistence.mountPath }}/conf.d/"
+        - name: nginx_test-volume
+          mountPath: {{ .Values.nginx_test.persistence.mountPath | quote }}
+        - name: ssl-certificates
+          mountPath: "{{ .Values.nginx_test.persistence.mountPath }}/ssl"
+        resources:
+{{ toYaml .Values.nginx_test.resources | indent 10 }}
+        {{- if .Values.nginx_test.readinessProbe.enabled }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.nginx_test.readinessProbe.path }}
+            {{- if .Values.nginx_test.http.enabled }}
+            port: {{ .Values.nginx_test.http.internalPort }}
+            scheme: HTTP
+            {{- else }}
+            port: {{ .Values.nginx_test.https.internalPort }}
+            scheme: HTTPS
+            {{- end }}
+          initialDelaySeconds: {{ .Values.nginx_test.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.nginx_test.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.nginx_test.readinessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.nginx_test.readinessProbe.failureThreshold }}
+          successThreshold: {{ .Values.nginx_test.readinessProbe.successThreshold }}
+        {{- end }}
+        {{- if .Values.nginx_test.livenessProbe.enabled }}
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.nginx_test.livenessProbe.path }}
+            {{- if .Values.nginx_test.http.enabled }}
+            port: {{ .Values.nginx_test.http.internalPort }}
+            scheme: HTTP
+            {{- else }}
+            port: {{ .Values.nginx_test.https.internalPort }}
+            scheme: HTTPS
+            {{- end }}
+          initialDelaySeconds: {{ .Values.nginx_test.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.nginx_test.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.nginx_test.livenessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.nginx_test.livenessProbe.failureThreshold }}
+          successThreshold: {{ .Values.nginx_test.livenessProbe.successThreshold }}
+        {{- end }}
+      {{- $image := .Values.logger.image.repository }}
+      {{- $tag := .Values.logger.image.tag }}
+      {{- $mountPath := .Values.nginx_test.persistence.mountPath }}
+      {{- range .Values.nginx_test.loggers }}
+      - name: {{ . | replace "_" "-" | replace "." "-" }}
+        image: '{{ $image }}:{{ $tag }}'
+        command:
+        - tail
+        args:
+        - '-F'
+        - '{{ $mountPath }}/logs/{{ . }}'
+        volumeMounts:
+        - name: nginx_test-volume
+          mountPath: {{ $mountPath }}
+        resources:
+{{ toYaml $.Values.nginx_test.loggersResources | indent 10 }}
+      {{- end }}
+    {{- with .Values.nginx_test.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.nginx_test.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.nginx_test.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+      volumes:
+      - name: nginx_test-conf
+        configMap:
+        {{- if .Values.nginx_test.customConfigMap }}
+          name: {{ .Values.nginx_test.customConfigMap }}
+        {{- else }}
+          name: {{ template "artifactory.fullname" . }}-nginx_test-conf
+        {{- end }}
+      - name: nginx_test-artifactory-conf
+        configMap:
+      {{- if .Values.nginx_test.customArtifactoryConfigMap }}
+          name: {{ .Values.nginx_test.customArtifactoryConfigMap }}
+      {{- else }}
+          name: {{ template "artifactory.fullname" . }}-nginx_test-artifactory-conf
+      {{- end }}
+      - name: nginx_test-volume
+      {{- if .Values.nginx_test.persistence.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.nginx_test.persistence.existingClaim | default (include "artifactory.nginx_test.fullname" .) }}
+      {{- else }}
+        emptyDir: {}
+      {{- end }}
+      - name: ssl-certificates
+        secret:
+      {{- if .Values.nginx_test.tlsSecretName }}
+          secretName: {{ .Values.nginx_test.tlsSecretName }}
+      {{- else }}
+          secretName: {{ template "artifactory.fullname" . }}-nginx_test-certificate
+      {{- end }}
+{{- end }}
