@@ -1,8 +1,7 @@
 name: nginx
 version: 0.0.1
 appVersion: 5.7.14
-description: Fast, reliable, scalable, and easy to use open-source relational database
-  system.
+description: Nginx (engine x) 是一个高性能的HTTP和反向代理web服务器(chart.yaml)
 keywords:
 - nginx
 home: https://www.nginx.com/

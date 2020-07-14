@@ -36,13 +36,13 @@ questions:
   group: "nginx Settings"
 - variable: nginxPassword
   default: ""
-  description: "nginx Password for the new user, defaults to a random 10-character alphanumeric string if not set"
+  description: "-------------------------"
   type: password
   label: nginx Password
   group: "nginx Settings"
 - variable: persistence.enabled
   default: "false"
-  description: "Enable persistence using PVC"
+  description: "Enable persistence using PVC（question.yml-description）"
   type: boolean
   required: true
   label: Persistent Volume Enabled
@@ -61,22 +61,22 @@ questions:
     type: storageclass
     label: Default storageClass
 - variable: service.port
-  default: "3306"
-  description: "Service port for access to nginx"
+  default: "8006"
+  description: "++++++++++++++++++++++++++++++="
   type: string
-  label: nginx NodePort number
+  label: nginx NodePort number!!!!!!!!!!!!!!!!!!!!!
   required: true
   group: "nginx Settings"
 - variable: service.type
   default: "ClusterIP"
-  description: "nginx K8s Service type"
+  description: "questions.yml(description)中"
   type: enum
-  group: "Services and Load Balancing"
+  group: "Services and Load Balancing(questions.yml-group)"
   options:
-    - "ClusterIP"
-    - "NodePort"
+    - "ClusterIP(questions.yml-options)"
+    - "NodePort(questions.yml-options)"
   required: true
-  label: nginx Service Type
+  label: nginx Service Type (questions.yml-label)
   show_subquestion_if: "NodePort"
   subquestions:
   - variable: service.nodePort
