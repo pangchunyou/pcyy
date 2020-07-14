@@ -3,7 +3,7 @@
 ##
 replicaCount: 1
 image: 
-  repository: 
+  repository: docker.io/nginx
   tag: latest
   pullPolicy: IfNotPresent
 service:
