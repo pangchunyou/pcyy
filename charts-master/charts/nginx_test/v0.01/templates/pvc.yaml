@@ -2,9 +2,9 @@
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: {{ template "nginx_test.fullname" . }}
+  name: {{ template "nginx.fullname" . }}
   labels:
-    app: {{ template "nginx_test.fullname" . }}
+    app: {{ template "nginx.fullname" . }}
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     release: "{{ .Release.Name }}"
     heritage: "{{ .Release.Service }}"

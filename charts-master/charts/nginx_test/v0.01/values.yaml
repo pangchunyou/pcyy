@@ -1,5 +1,5 @@
-## nginx_test image version
-## ref: https://hub.docker.com/r/library/nginx_test/tags/
+## nginx image version
+## ref: https://hub.docker.com/r/library/nginx/tags/
 ##
 replicaCount: 1
 image: 
@@ -7,7 +7,7 @@ image:
   tag: latest
   pullPolicy: IfNotPresent
 service:
-  name: nginx_test
+  name: nginx
   externalPort: 3000
   internalPort: 3000
   type: ClusterIP
@@ -21,20 +21,20 @@ ingress:
 ## Specify password for root user
 ##
 ## Default: random 10 character string
-# nginx_testRootPassword: testing
+# nginxRootPassword: testing
 
 ## Create a database user
 ##
-# nginx_testUser:
-# nginx_testPassword:
+# nginxUser:
+# nginxPassword:
 
 ## Allow unauthenticated access, uncomment to enable
 ##
-# nginx_testAllowEmptyPassword: true
+# nginxAllowEmptyPassword: true
 
 ## Create a database
 ##
-# nginx_testDatabase:
+# nginxDatabase:
 
 ## Specify an imagePullPolicy (Required)
 ## It's recommended to change this to 'Always' if the image tag is 'latest'
@@ -82,10 +82,10 @@ resources:
     memory: 256Mi
     cpu: 100m
 
-# Custom nginx_test configuration files used to override default nginx_test settings
+# Custom nginx configuration files used to override default nginx settings
 configurationFiles:
-#  nginx_test.cnf: |-
-#    [nginx_testd]
+#  nginx.cnf: |-
+#    [nginxd]
 #    skip-name-resolve
 
 

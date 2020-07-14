@@ -1,6 +1,6 @@
 rancher_max_version: 2.3.1
 categories:
-- nginx_test
+- nginx
 questions:
 - variable: defaultImage
   default: "true"
@@ -11,7 +11,7 @@ questions:
   group: "Container Images"
   subquestions:
   - variable: image
-    default: "nginx_test"
+    default: "nginx"
     description: "Docker image name"
     type: string
     label: Image Name
@@ -20,26 +20,26 @@ questions:
     description: "Docker image tag"
     type: string
     label: Image Tag
-- variable: nginx_test
+- variable: nginx
   default: "admin"
   description: "Name of database to create"
   type: string
   required: true
-  label: nginx_test Database
-  group: "nginx_test Settings"
-- variable: nginx_test
+  label: nginx Database
+  group: "nginx Settings"
+- variable: nginx
   default: "admin"
   description: "Username of user to create"
   type: string
   required: true
-  label: nginx_test Username
-  group: "nginx_test Settings"
-- variable: nginx_testPassword
+  label: nginx Username
+  group: "nginx Settings"
+- variable: nginxPassword
   default: ""
-  description: "nginx_test Password for the new user, defaults to a random 10-character alphanumeric string if not set"
+  description: "nginx Password for the new user, defaults to a random 10-character alphanumeric string if not set"
   type: password
-  label: nginx_test Password
-  group: "nginx_test Settings"
+  label: nginx Password
+  group: "nginx Settings"
 - variable: persistence.enabled
   default: "false"
   description: "Enable persistence using PVC"
@@ -62,21 +62,21 @@ questions:
     label: Default storageClass
 - variable: service.port
   default: "3306"
-  description: "Service port for access to nginx_test"
+  description: "Service port for access to nginx"
   type: string
-  label: nginx_test NodePort number
+  label: nginx NodePort number
   required: true
-  group: "nginx_test Settings"
+  group: "nginx Settings"
 - variable: service.type
   default: "ClusterIP"
-  description: "nginx_test K8s Service type"
+  description: "nginx K8s Service type"
   type: enum
   group: "Services and Load Balancing"
   options:
     - "ClusterIP"
     - "NodePort"
   required: true
-  label: nginx_test Service Type
+  label: nginx Service Type
   show_subquestion_if: "NodePort"
   subquestions:
   - variable: service.nodePort
