@@ -3,6 +3,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ template "nginx.fullname" . }}
+  namespace: {{ .Release.Namespace }}
 data:
 {{- range $key, $val := .Values.configurationFiles }}
   {{ $key }}: |-
