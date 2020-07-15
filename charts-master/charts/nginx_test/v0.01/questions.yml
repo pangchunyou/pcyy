@@ -75,8 +75,8 @@ questions:
   type: enum
   group: "Services and Load Balancing(questions.yml-group)"
   options:
-    - "ClusterIP(questions.yml-options)"
-    - "NodePort(questions.yml-options)"
+    - "ClusterIP"
+    - "NodePort"
   required: true
   label: nginx Service Type (questions.yml-label)
   show_subquestion_if: "NodePort"
