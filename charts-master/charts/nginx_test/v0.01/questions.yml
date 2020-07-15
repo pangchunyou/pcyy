@@ -83,7 +83,7 @@ questions:
   subquestions:
   - variable: service.nodePort
     default: ""
-    description: "NodePort port number(to set explicitly, choose port between 30000-32767)"
+    description: "NodePort port number(to set explicitly,choose port between 30000-32767)"
     type: int
     min: 30000
     max: 32767
