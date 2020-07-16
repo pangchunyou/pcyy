@@ -11,7 +11,7 @@ service:
   externalPort: 3000
   internalPort: 3000
   type: ClusterIP
-  port: 8006
+  port: 80
 ingress:
   enabled: false
   hosts:
