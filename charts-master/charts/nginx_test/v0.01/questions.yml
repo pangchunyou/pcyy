@@ -63,7 +63,7 @@ questions:
     type: storageclass
     label: Default storageClass
 - variable: service.port
-  default: ""
+  default: "80"
   description: "++++++++++++++++++++++++++++++="
   type: string
   label: nginx NodePort number!!!!!!!!!!!!!!!!!!!!!
